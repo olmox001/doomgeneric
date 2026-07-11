@@ -11,20 +11,27 @@ static int s_window = -1;
 char *savedir = "/bin";
 
 void DG_Init() {
+  /* No window exists yet — plain printf (mirrors to UART/serial log) is
+   * safe here regardless of outcome. */
   printf("DG_Init: Creating window...\n");
   /* Doom resolution is typically 640x400 or 320x200 */
   s_window = create_window(50, 50, DOOMGENERIC_RESX, DOOMGENERIC_RESY,
                            "DoomGeneric OS1");
   if (s_window < 0) {
+    /* Still no window (create_window itself failed) — safe as printf too. */
     printf("DG_Init: FAILED to create window!\n");
     exit(1);
   }
   int my_pid = get_pid();
-  printf("DG_Init: Window created, id=%d, my_pid=%d\n", s_window, my_pid);
+  /* s_window is live from here on — route through the existing notification
+   * popup (OS1_notify_post, lib.c) instead of printf. */
+  char msg[64];
+  snprintf(msg, sizeof(msg), "window created, id=%d, my_pid=%d", s_window,
+           my_pid);
+  OS1_notify_post("Doom", msg);
 
   /* Standardized focus handling */
   set_focus(my_pid);
-  printf("DG_Init: Focus set to PID %d\n", my_pid);
 }
 
 void DG_DrawFrame() {
@@ -110,12 +117,13 @@ void DG_SetWindowTitle(const char *title) {
 }
 
 int main(int argc, char **argv) {
+  /* No window yet — safe as printf. */
   printf("Doom OS1 starting (argc=%d)...\n", argc);
 
-  /* Initialize DoomGeneric engine */
+  /* Initialize DoomGeneric engine (creates the window via DG_Init and loads
+   * the WADs — s_window is live by the time this returns). */
   doomgeneric_Create(argc, argv);
 
-  printf("Doom engine initialized, starting tick loop...\n");
   while (1) {
     /* Engine main loop step */
     doomgeneric_Tick();
