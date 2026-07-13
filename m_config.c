@@ -2115,9 +2115,10 @@ char *M_GetSaveGameDir(char *iwadname)
 
         free(topdir);
 #else
-        savegamedir = M_StringJoin(configdir, DIR_SEPARATOR_S, ".savegame/", NULL);
-
-        M_MakeDirectory(savegamedir);
+        /* NexsOS: no mkdir in the VFS yet, so savegames sit DIRECTLY in the
+         * pre-created configdir (/home/Documents/doom/) instead of a
+         * .savegame/ subdirectory that could never be created at runtime. */
+        savegamedir = M_StringJoin(configdir, NULL);
 
         printf ("Using %s for savegames\n", savegamedir);
 #endif

@@ -8,7 +8,9 @@
 #include <unistd.h> /* usleep() — real microsecond blocking sleep */
 
 static int s_window = -1;
-char *savedir = "/bin";
+/* Default for the 'savedir' config variable: the user tree (vfs ACL —
+ * /home/Documents/doom is pre-created by the rootfs build). */
+char *savedir = "/home/Documents/doom";
 
 void DG_Init() {
   /* No window exists yet — plain printf (mirrors to UART/serial log) is

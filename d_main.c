@@ -1317,9 +1317,12 @@ void D_DoomMain (void)
     else
 #endif
     {
-        // Auto-detect the configuration dir.
+        // NexsOS: config + savegames live in the user tree (vfs ACL: /home
+        // is the only user-writable tree; the directory is pre-created by
+        // the rootfs build because ext4 has no mkdir yet).  Trailing slash
+        // matters: paths are built as configdir + name.
 
-        M_SetConfigDir(NULL);
+        M_SetConfigDir("/home/Documents/doom/");
     }
 
     //!
