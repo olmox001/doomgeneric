@@ -80,12 +80,19 @@ char *P_SaveGameFile(int slot)
 
 static byte saveg_read8(void)
 {
-    byte result;
+    byte result = 0; /* FIX: was uninitialized — on a short/truncated save the
+                      * returned value was stack garbage, so the tclass loops in
+                      * P_UnArchive* could spin forever on a chance tc_mobj
+                      * instead of terminating. A defined 0 == tc_end/tc_endspecials
+                      * ends the loop cleanly into the "Bad savegame" path. */
 
     if (fread(&result, 1, 1, save_stream) < 1)
     {
         if (!savegame_error)
         {
+            /* printf() reaches the serial console (UART) like the rest of
+             * doom's diagnostics; fprintf(stderr) alone was easy to miss. */
+            printf("saveg_read8: unexpected EOF reading savegame\n");
             fprintf(stderr, "saveg_read8: Unexpected end of file while "
                             "reading save game\n");
 
@@ -1643,11 +1650,16 @@ void P_UnArchiveThinkers (void)
     while (1)
     {
 	tclass = saveg_read8();
+	/* Stop on a read error instead of spinning: a truncated/corrupt save
+	 * would otherwise loop here forever (the "doom load hang"). The header
+	 * EOF check in G_DoLoadGame then reports "Bad savegame". */
+	if (savegame_error)
+	    return;
 	switch (tclass)
 	{
 	  case tc_end:
 	    return; 	// end of list
-			
+		
 	  case tc_mobj:
 	    saveg_read_pad();
 	    mobj = Z_Malloc (sizeof(*mobj), PU_LEVEL, NULL);
@@ -1806,6 +1818,10 @@ void P_UnArchiveSpecials (void)
     while (1)
     {
 	tclass = saveg_read8();
+	/* Same guard as P_UnArchiveThinkers: terminate on a read error rather
+	 * than spinning on garbage from a truncated/corrupt savegame. */
+	if (savegame_error)
+	    return;
 
 	switch (tclass)
 	{

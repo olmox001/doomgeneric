@@ -1551,10 +1551,15 @@ void G_DoLoadGame (void)
 	 
     gameaction = ga_nothing; 
 	 
+    /* UART/serial debug trace (printf reaches the console): shows exactly
+     * which load stage runs, so a hang/corruption is visible instead of a
+     * silent loop. */
+    printf("[doom-load] open '%s'\n", savename);
     save_stream = fopen(savename, "rb");
 
     if (save_stream == NULL)
     {
+    	printf("[doom-load] fopen failed\n");
     	return;
     }
 
@@ -1562,23 +1567,25 @@ void G_DoLoadGame (void)
 
     if (!P_ReadSaveGameHeader())
     {
+        printf("[doom-load] bad/failed header\n");
         fclose(save_stream);
         return;
     }
 
     savedleveltime = leveltime;
-    
-    // load a base level 
-    G_InitNew (gameskill, gameepisode, gamemap); 
- 
+
+    // load a base level
+    G_InitNew (gameskill, gameepisode, gamemap);
+
     leveltime = savedleveltime;
 
     // dearchive all the modifications
-    P_UnArchivePlayers (); 
-    P_UnArchiveWorld (); 
-    P_UnArchiveThinkers (); 
-    P_UnArchiveSpecials (); 
- 
+    printf("[doom-load] players\n");   P_UnArchivePlayers ();
+    printf("[doom-load] world\n");     P_UnArchiveWorld ();
+    printf("[doom-load] thinkers\n");  P_UnArchiveThinkers ();
+    printf("[doom-load] specials\n");  P_UnArchiveSpecials ();
+    printf("[doom-load] eof-check (err=%d)\n", savegame_error);
+
     if (!P_ReadSaveGameEOF())
 	I_Error ("Bad savegame");
 
