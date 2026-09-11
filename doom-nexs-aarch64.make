@@ -11,8 +11,8 @@ DOOM_CFLAGS = -w -ffreestanding -fno-builtin -nostdlib -nostartfiles -fno-common
 DOOM_CFLAGS += -I$(DOOM_DIR) -DNORMALUNIX
 
 $(BUILD_DIR)/doom.elf: $(DOOM_OBJS) $(DOOM_PLATFORM_OBJ) $(USER_LIB_O) $(USER_SYSCALL_O) $(USER_MALLOC_O)
-	@echo "[Linking Doom AArch64]"
-	@$(CC) $(DOOM_CFLAGS) -Wl,-Ttext=0x80000000 -e _start -o $@ $^
+	@echo "[Linking Doom Aarch64]"
+	@$(CC) $(DOOM_CFLAGS) $(USER_LINK_FLAGS) -Wl,-Ttext=0x80000000 -e _start -o $@ $^
 
 $(DOOM_PLATFORM_OBJ): $(DOOM_DIR)/doomgeneric_os1.c
 	@mkdir -p $(dir $@)
