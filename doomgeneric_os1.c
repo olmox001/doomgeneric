@@ -56,8 +56,8 @@ void DG_SleepMs(uint32_t ms) {
 }
 
 uint32_t DG_GetTicksMs() {
-  /* get_time() in OS1 returns milliseconds since boot */
-  return (uint32_t)get_time();
+  /* OS1_time_now() in OS1 returns milliseconds since boot */
+  return (uint32_t)OS1_time_now();
 }
 
 int DG_GetKey(int *pressed, unsigned char *key) {
